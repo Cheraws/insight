@@ -15,12 +15,12 @@ and the order it was accessed in for printing logic.
 
 
 class UserTime:
-    def __init__(self, ip, logs):
+    def __init__(self, ip, request_index):
         self.ip = ip
-        self.logs = logs
+        self.request_index = request_index
 
     def __lt__(self, other):
-        return self.logs < other.logs
+        return self.request_index < other.request_index
 
 '''
 metadata of the user. Contains current_time, requests, and the IP of the
@@ -28,24 +28,24 @@ metadata of the user. Contains current_time, requests, and the IP of the
 '''
 
 class UserData:
-    total_logs = 0
+    total_index = 0
 
     def __init__(self, current_time, requests, ip):
-        self.logs = UserData.total_logs + 1
-        UserData.total_logs = self.logs
+        self.request_index = UserData.total_index + 1
+        UserData.request_index = self.request_index
         self.current_time = current_time
         self.end_time = current_time
         self.requests = requests
         self.ip = ip
 
     def __lt__(self, other):
-        return self.logs < other.logs
+        return self.request_index < other.request_index
 
 '''
 time conversion to a form that Python can utilize.
 '''
 
-def convertTime(log_date, log_time):
+def convert_time(log_date, log_time):
     f = "%Y-%m-%d %H:%M:%S"
     d_str = '{0} {1}'.format(log_date, log_time)
     time = datetime.datetime.strptime(d_str, f)
@@ -56,7 +56,7 @@ def convertTime(log_date, log_time):
 Advance with a window until the window is too big for the users to expire. In each bucket,
 check to see if the users in the bucket have the same time as their own data. If they are, print to file.
 '''
-def advanceSessionWindow(
+def advance_session_window(
         time_buckets,
         session_window_start,
         user_info,
@@ -70,13 +70,13 @@ def advanceSessionWindow(
         else:
             if session_window_start in time_buckets:
                 while time_buckets[session_window_start][0]:
-                    data = heapq.heappop(time_buckets[session_window_start][0])
+                    data = heapq.heappop(time_buckets[session_window_start][0])[1]
                     ip = data.ip
                     # if maximum request one already filtered out.
                     if ip not in user_info:
                         continue
                     if session_window_start == user_info[ip].end_time:
-                        printUserData(user_info[ip], ip)
+                        print_user_data(user_info[ip], ip)
                         del(user_info[ip])
                 # save time of session_window_start
                 del time_buckets[session_window_start]
@@ -87,7 +87,7 @@ def advanceSessionWindow(
 outputs userdata to the file location given.
 '''
 
-def printUserData(user_data, ip):
+def print_user_data(user_data, ip):
     start_time = user_data.current_time
     end_time = user_data.end_time
     start_time_string = "{:%Y-%m-%d %H:%M:%S}".format(start_time)
@@ -111,16 +111,16 @@ Go through all the keys in order in the OrderedDict of users and finish
  printing up everything.
 '''
 
-def finish_printing(user_times):
+def finish_printing(user_info):
     deleted_users = []
     for user in user_info.keys():
-        printUserData(user_info[user], user)
+        print_user_data(user_info[user], user)
         deleted_users += [user]
     for user in deleted_users:
         del(user_info[user])
 
 
-if __name__ == "__main__":
+def process_file():
     user_info = collections.OrderedDict()
     time_buckets = {}
     inactivity_time = None
@@ -139,11 +139,11 @@ if __name__ == "__main__":
         reader = csv.DictReader(input_file, delimiter=",")
         header = reader.fieldnames
         for i, line in enumerate(reader):
-            current_time = convertTime(line['date'], line['time'])
+            current_time = convert_time(line['date'], line['time'])
             if session_window_start is None:
                 session_window_start = current_time
             # check to see if any files expired.
-            session_window_start = advanceSessionWindow(
+            session_window_start = advance_session_window(
                 time_buckets, session_window_start, user_info, inactivity_time, current_time)
             ip = line['ip']
             if ip not in user_info:
@@ -156,11 +156,16 @@ if __name__ == "__main__":
             # min heap to make sure files are outputted in start time order.
             details = UserTime(
                 line['ip'],
-                user_info[ip].logs)
+                user_data.request_index)
             if current_time not in time_buckets:
                 time_buckets[current_time] = ([], set())
             if ip not in time_buckets[current_time][1]:
-                heapq.heappush(time_buckets[current_time][0], details)
+                heapq.heappush(time_buckets[current_time][0], (user_data.request_index,details))
                 time_buckets[current_time][1].add(ip)
     finish_printing(user_info)
     input_file.close()
+
+
+if __name__ == "__main__":
+    process_file()
+    
