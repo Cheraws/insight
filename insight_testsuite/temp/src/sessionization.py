@@ -8,7 +8,7 @@ import heapq
 from queue import Queue
 from datetime import timedelta 
 
-
+#Data sturture that is stored inside a minheap. Contains the ip, requests, and the order it was accessed in.
 class UserTime:
     def __init__(self, ip,requests,logs,current_time):
         self.ip = ip
@@ -18,9 +18,8 @@ class UserTime:
 
     def __lt__(self,other):
         return self.logs < other.logs
-    
 
-
+#metadata of the user. Contains current_time, requests, and the IP of the user.
 class UserData:
     total_logs = 0
     def __init__(self,current_time,requests,ip):
@@ -34,6 +33,7 @@ class UserData:
     def __lt__(self, other):
         return self.logs < other.logs
 
+#time conversion to a form that Python can utilize.
 def convertTime(log_date, log_time):
     f = "%Y-%m-%d %H:%M:%S"
     d_str = '{0} {1}'.format(log_date, log_time)
@@ -61,6 +61,7 @@ def checkInactiveHeap(time_heaps, old_time, user_info,inactivity_time,current_ti
         old_time = old_time + timedelta(seconds=1)
     return old_time
 
+#outputs userdata to the file location given.
 def printUserData(user_data,ip):
     start_time = user_data.current_time
     end_time = user_data.end_time
@@ -70,13 +71,11 @@ def printUserData(user_data,ip):
     requests = user_data.requests
     return_text = ("{0},{1},{2},{3},{4}".format(ip, start_time_string,end_time_string,
         seconds, requests))
-    print(return_text)
+    #print(return_text)
     with open(sys.argv[3],"a") as output_file:
         output_file.write(return_text + '\n')
             
-    
-
-    #Go through all the keys in order and finish printing up everything.
+#Go through all the keys in order in the OrderedDict of users and finish printing up everything.
 def checkNaiveInactive(user_times, inactivity_time,current_time,final=False):
     deleted_users = []
     for user in user_info.keys():
@@ -128,7 +127,6 @@ if __name__ == "__main__":
             heapq.heappush(time_heaps[current_time],details)
             user_times.put(details)
     checkNaiveInactive(user_times,inactivity_time, current_time,True)
-    #checkInactivity(user_times, oldest_entry, user_info,inactivity_time,current_time, final="True")
 
 
             
