@@ -1,1 +1,1 @@
-This test has been provided for you so that you can see one example, however, you should be creating your own tests to check that your code runs as expected.
+Made as a check to see if the min heap works as expected. The min heap is to make sure that the users exiting at the same time are sorted by their first access, not by when the last accessed the file.

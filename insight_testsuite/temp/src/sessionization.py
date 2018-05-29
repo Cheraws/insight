@@ -8,20 +8,6 @@ import heapq
 from queue import Queue
 from datetime import timedelta
 
-''' 
-Data sturture that is stored inside a minheap. Contains the ip,
-and the order it was accessed in for printing logic.
-'''
-
-
-class UserTime:
-    def __init__(self, ip, request_index):
-        self.ip = ip
-        self.request_index = request_index
-
-    def __lt__(self, other):
-        return self.request_index < other.request_index
-
 '''
 metadata of the user. Contains current_time, requests, and the IP of the
  user.
@@ -32,7 +18,8 @@ class UserData:
 
     def __init__(self, current_time, requests, ip):
         self.request_index = UserData.total_index + 1
-        UserData.request_index = self.request_index
+        UserData.total_index = self.request_index
+        print(UserData.total_index)
         self.current_time = current_time
         self.end_time = current_time
         self.requests = requests
@@ -69,13 +56,14 @@ def advance_session_window(
             return session_window_start
         else:
             if session_window_start in time_buckets:
+                print(time_buckets[session_window_start][0],session_window_start)
                 while time_buckets[session_window_start][0]:
-                    data = heapq.heappop(time_buckets[session_window_start][0])[1]
-                    ip = data.ip
+                    ip = heapq.heappop(time_buckets[session_window_start][0])[1]
                     # if maximum request one already filtered out.
                     if ip not in user_info:
                         continue
                     if session_window_start == user_info[ip].end_time:
+                        print("deleted in here")
                         print_user_data(user_info[ip], ip)
                         del(user_info[ip])
                 # save time of session_window_start
@@ -154,13 +142,11 @@ def process_file():
             user_data.requests += 1
             user_data.end_time = current_time
             # min heap to make sure files are outputted in start time order.
-            details = UserTime(
-                line['ip'],
-                user_data.request_index)
+
             if current_time not in time_buckets:
                 time_buckets[current_time] = ([], set())
             if ip not in time_buckets[current_time][1]:
-                heapq.heappush(time_buckets[current_time][0], (user_data.request_index,details))
+                heapq.heappush(time_buckets[current_time][0], (user_data.request_index,ip))
                 time_buckets[current_time][1].add(ip)
     finish_printing(user_info)
     input_file.close()
