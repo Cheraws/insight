@@ -19,7 +19,6 @@ class UserData:
     def __init__(self, current_time, requests, ip):
         self.request_index = UserData.total_index + 1
         UserData.total_index = self.request_index
-        print(UserData.total_index)
         self.current_time = current_time
         self.end_time = current_time
         self.requests = requests

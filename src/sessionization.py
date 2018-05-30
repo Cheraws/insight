@@ -55,14 +55,12 @@ def advance_session_window(
             return session_window_start
         else:
             if session_window_start in time_buckets:
-                print(time_buckets[session_window_start][0],session_window_start)
                 while time_buckets[session_window_start][0]:
                     ip = heapq.heappop(time_buckets[session_window_start][0])[1]
                     # if maximum request one already filtered out.
                     if ip not in user_info:
                         continue
                     if session_window_start == user_info[ip].end_time:
-                        print("deleted in here")
                         print_user_data(user_info[ip], ip)
                         del(user_info[ip])
                 # save time of session_window_start
