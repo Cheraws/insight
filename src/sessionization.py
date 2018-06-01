@@ -9,7 +9,7 @@ from queue import Queue
 from datetime import timedelta
 
 '''
-metadata of the user. Contains current_time, requests, and the IP of the
+Metadata of the user. Contains current_time, requests, and the IP of the
  user.
 '''
 
@@ -104,6 +104,10 @@ def finish_printing(user_info):
     for user in deleted_users:
         del(user_info[user])
 
+'''
+Files are processed here. Go line by line and print the expired ones, then print everything left 
+when the file happens to be done.
+'''
 
 def process_file():
     user_info = collections.OrderedDict()
